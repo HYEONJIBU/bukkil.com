@@ -8,7 +8,8 @@
    - 이름이 모호하면 `python -m finvault search <이름>` 결과를 사용자에게 보여주고 고른다.
 3. 표준 지표는 `Vault.metrics / ttm / ratios / compare`, 그 외 계정은 `Vault.find_accounts` → `Vault.account`,
    배당·주주·직원·임원보수 등은 `Vault.items(company, api)`, 그 밖은 `Vault.sql`.
-4. 답변에는 항상 **단위(억원 등), 연결/별도(fs_div), 기간 기준(연간/분기 3개월/TTM)** 을 명시한다.
+4. 사용자가 엑셀을 원하면 `python -m finvault export <회사>` → `data/<회사명>_FinVault.xlsx` 를 전달.
+5. 답변에는 항상 **단위(억원 등), 연결/별도(fs_div), 기간 기준(연간/분기 3개월/TTM)** 을 명시한다.
 
 ## 주의
 - 기본은 연결(CFS). 연결재무제표가 없는 회사는 자동으로 별도(OFS).

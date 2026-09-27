@@ -98,3 +98,15 @@ def test_client_status_handling():
         DartClient("K", 0, session=S({"status": "020", "message": "limit"})).get_list("x")
     with pytest.raises(DartError):
         DartClient("K", 0, session=S({"status": "010", "message": "bad key"})).get_list("x")
+
+
+def test_excel_export(env, tmp_path):
+    import openpyxl
+    from finvault.export import export_company
+
+    _, _, vault = env
+    path = export_company("테스트전자", tmp_path / "out.xlsx", vault=vault)
+    wb = openpyxl.load_workbook(path)
+    assert {"안내", "요약_연간", "요약_분기", "손익계산서_분기", "재무상태표_연간", "배당에 관한 사항"} <= set(wb.sheetnames)
+    rows = {r[0]: r[1:] for r in wb["요약_연간"].iter_rows(min_row=2, values_only=True)}
+    assert rows["매출액(억원)"][0] == pytest.approx(sum(revenue(2023, i) for i in (1, 2, 3, 4)) / 1e8)

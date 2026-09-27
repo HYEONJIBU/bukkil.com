@@ -247,7 +247,7 @@ def ingest_disclosures(conn, client, corp_code, start_year: int, log: Logger = p
 def ingest_company(conn, client: DartClient, query: str, start_year: int, end_year: int,
                    fs_divs=("CFS", "OFS"), extras=True, refresh=False, log: Logger = print) -> str:
     if not conn.execute("SELECT 1 FROM corp_codes LIMIT 1").fetchone():
-        log("고유번호 목록을 내려받는 중...")
+        log("DART 회사 고유번호 목록을 내려받는 중... (최초 1회, 수 분 걸릴 수 있음)")
         sync_corp_codes(conn, client)
     corp = resolve_corp(conn, query)
     corp_code = corp["corp_code"]

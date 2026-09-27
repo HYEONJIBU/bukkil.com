@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import functools
 import sys
 
 import pandas as pd
 
-from . import config, db, ingest, transform
+from . import config, db, export, ingest, transform
 from .accounts import KEY_REPORT_APIS, METRICS
 from .analysis import UNITS, Vault
 
@@ -54,6 +55,13 @@ def _main(argv=None) -> None:
     s.add_argument("--fs", default="CFS,OFS", help="CFS(연결), OFS(별도)")
     s.add_argument("--no-extras", action="store_true", help="주요정보/지표/공시목록 수집 생략")
     s.add_argument("--refresh", action="store_true", help="이미 수집한 기간도 다시 받기")
+    s.add_argument("--excel", action="store_true", help="수집 후 엑셀 파일도 만들기")
+
+    s = sub.add_parser("export", help="엑셀(.xlsx)로 내보내기")
+    s.add_argument("companies", nargs="+")
+    s.add_argument("-o", "--output", help="파일 경로 (회사 1곳일 때). 기본: data/<회사명>_FinVault.xlsx")
+    s.add_argument("--fs", default="auto")
+    s.add_argument("--unit", default="억", choices=list(UNITS))
 
     s = sub.add_parser("rebuild", help="fs_raw로부터 fs_values/metrics 재계산")
     s.add_argument("companies", nargs="*")
@@ -106,13 +114,20 @@ def _main(argv=None) -> None:
         conn, client = db.connect(), _client()
         for c in args.companies:
             ingest.ingest_company(conn, client, c, args.start, args.end, tuple(args.fs.split(",")),
-                                  extras=not args.no_extras, refresh=args.refresh)
+                                  extras=not args.no_extras, refresh=args.refresh,
+                                  log=functools.partial(print, flush=True))
+            if args.excel:
+                print("엑셀 저장:", export.export_company(c), flush=True)
     elif args.cmd == "rebuild":
         conn = db.connect()
         codes = [ingest.resolve_corp(conn, c)["corp_code"] for c in args.companies] or \
                 [r[0] for r in conn.execute("SELECT DISTINCT corp_code FROM fs_raw")]
         for cc in codes:
             print(cc, transform.rebuild(conn, cc))
+    elif args.cmd == "export":
+        for c in args.companies:
+            out = args.output if len(args.companies) == 1 else None
+            print("엑셀 저장:", export.export_company(c, out, args.fs, args.unit))
     elif args.cmd == "list-metrics":
         for m in METRICS:
             print(f"{m.name:22s} {m.label:12s} {'/'.join(m.statements)}")

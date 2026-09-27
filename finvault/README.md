@@ -28,7 +28,7 @@ DART OpenAPI로 기업의 사업보고서·분기보고서를 불러와 **연간
 
 ```bash
 cd finvault
-pip install -e ".[dev]"          # requests, pandas, pytest
+pip install -e ".[dev]"          # requests, pandas, openpyxl, pytest
 cp .env.example .env             # DART_API_KEY=발급받은키 입력
 ```
 
@@ -43,9 +43,22 @@ python -m finvault ingest 005930 000660 --from 2018  # 종목코드로 여러 �
 python -m finvault ingest 삼성전자 --refresh         # 이미 받은 기간도 다시 받기
 ```
 
-회사 1곳을 2015~2026년 전체 수집하면 대략 300~400회 호출합니다. 이미 받은 기간은 `fetch_log`에 기록돼 다시 호출하지 않습니다.
+회사 1곳을 2015~2026년 전체 수집하면 대략 300~400회 호출하며, 호출당 수 초가 걸려 **30분~1시간** 정도 소요됩니다. 최초 1회는 회사 고유번호 목록(약 12만 개) 다운로드에 수 분이 더 걸립니다. 이미 받은 기간은 `fetch_log`에 기록돼 다시 호출하지 않습니다.
 
-## 3. 조회 · 분석
+## 3. 엑셀로 보기
+
+`finvault.db`는 SQLite 파일이라 엑셀에서 바로 열리지 않습니다. 엑셀 파일로 내보내세요.
+
+```bash
+python -m finvault export 삼성전자                  # data/삼성전자(주)_FinVault.xlsx
+python -m finvault export 삼성전자 --unit 백만 -o 삼성.xlsx
+python -m finvault ingest 삼성전자 --excel          # 수집 후 바로 엑셀까지
+```
+
+시트 구성: 안내 / 요약(표준 지표)·비율 (연간·분기) / 재무상태표·손익계산서·포괄손익계산서·현금흐름표 (연간·분기) /
+정기보고서 주요정보(배당, 최대주주, 직원 등) / DART재무지표 / 정기공시목록(원문 링크)
+
+## 4. 조회 · 분석
 
 ```bash
 python -m finvault list-metrics                                   # 표준 지표 목록
@@ -68,7 +81,7 @@ vault.ratios("삼성전자", freq="A")
 vault.compare(["삼성전자", "SK하이닉스"], "operating_income", freq="Q", last=12)
 ```
 
-## 4. DB 구조 (`data/finvault.db`)
+## 5. DB 구조 (`data/finvault.db`)
 
 | 테이블 | 내용 |
 |---|---|
@@ -90,7 +103,7 @@ vault.compare(["삼성전자", "SK하이닉스"], "operating_income", freq="Q", 
 - 연간(A) 손익·현금흐름은 사업보고서 금액 (`basis=CUM`)
 - `fiscal_year`/`fiscal_q`는 DART의 사업연도 기준입니다 (12월 결산이 아닌 회사는 달력 분기와 다름)
 
-## 5. 테스트
+## 6. 테스트
 
 ```bash
 pytest -q        # 가짜 DART 서버로 수집→변환→분석 전 과정을 검증

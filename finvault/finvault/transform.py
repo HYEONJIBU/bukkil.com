@@ -95,7 +95,8 @@ def build_fs_values(conn: sqlite3.Connection, corp_code: str) -> int:
         if q in grouped[key][r["bsns_year"]]:
             continue
         grouped[key][r["bsns_year"]][q] = (r["thstrm_amount"], r["thstrm_add_amount"])
-        names[key] = (r["account_id"], r["account_nm"])  # 최신 연도 명칭이 남음
+        if r["reprt_code"] == "11011" or key not in names:  # 최신 사업보고서의 명칭을 우선
+            names[key] = (r["account_id"], r["account_nm"])
 
     records = []
     for key, years in grouped.items():
