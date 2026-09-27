@@ -24,11 +24,11 @@ def api_key() -> str:
     key = os.environ.get("DART_API_KEY", "").strip()
     if not key:
         raise RuntimeError(
-            "DART_API_KEY가 설정되지 않았습니다. dartlens/.env 파일에 DART_API_KEY=... 를 넣거나 "
+            "DART_API_KEY가 설정되지 않았습니다. finvault/.env 파일에 DART_API_KEY=... 를 넣거나 "
             "환경변수로 지정하세요. (발급: https://opendart.fss.or.kr)"
         )
     return key
 
 
 def db_path() -> Path:
-    return Path(os.environ.get("DARTLENS_DB", PROJECT_ROOT / "data" / "dartlens.db"))
+    return Path(os.environ.get("FINVAULT_DB", PROJECT_ROOT / "data" / "finvault.db"))

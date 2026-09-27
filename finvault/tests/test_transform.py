@@ -1,8 +1,8 @@
 import pytest
 
-from dartlens.accounts import account_key, normalize_name
-from dartlens.ingest import parse_amount
-from dartlens.transform import derive_periods
+from finvault.accounts import account_key, normalize_name
+from finvault.ingest import parse_amount
+from finvault.transform import derive_periods
 
 
 def as_dict(out):

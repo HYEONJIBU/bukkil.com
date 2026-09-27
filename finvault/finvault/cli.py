@@ -1,4 +1,4 @@
-"""명령줄 인터페이스: python -m dartlens <command> ..."""
+"""명령줄 인터페이스: python -m finvault <command> ..."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import pandas as pd
 
 from . import config, db, ingest, transform
 from .accounts import KEY_REPORT_APIS, METRICS
-from .analysis import UNITS, Lens
+from .analysis import UNITS, Vault
 
 
 def _client():
@@ -40,7 +40,7 @@ def main(argv=None) -> None:
 
 def _main(argv=None) -> None:
     this_year = dt.date.today().year
-    p = argparse.ArgumentParser(prog="dartlens", description="DART 재무 DB & 분석")
+    p = argparse.ArgumentParser(prog="finvault", description="DART 재무 DB & 분석")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     sub.add_parser("corp-sync", help="DART 고유번호 전체 목록 내려받기")
@@ -117,25 +117,25 @@ def _main(argv=None) -> None:
         for m in METRICS:
             print(f"{m.name:22s} {m.label:12s} {'/'.join(m.statements)}")
     else:
-        lens = Lens()
+        vault = Vault()
         if args.cmd == "status":
-            _print(lens.companies())
+            _print(vault.companies())
         elif args.cmd == "show":
             ms = args.metrics.split(",") if args.metrics else None
             if args.freq == "TTM":
-                df = lens.ttm(args.company, ms, args.fs, last=args.last)
+                df = vault.ttm(args.company, ms, args.fs, last=args.last)
                 df = df.drop(columns=[c for c in df.columns if c == "eps"]) / UNITS[args.unit]
             else:
-                df = lens.metrics(args.company, ms, args.freq, args.fs, last=args.last, unit=args.unit)
+                df = vault.metrics(args.company, ms, args.freq, args.fs, last=args.last, unit=args.unit)
             _print(df.T if len(df) <= 12 else df)
         elif args.cmd == "ratios":
-            _print(lens.ratios(args.company, args.freq, args.fs, last=args.last).T, "{:,.2f}")
+            _print(vault.ratios(args.company, args.freq, args.fs, last=args.last).T, "{:,.2f}")
         elif args.cmd == "account":
-            _print(lens.account(args.company, args.pattern, args.freq, args.fs, last=args.last) / 1e8)
+            _print(vault.account(args.company, args.pattern, args.freq, args.fs, last=args.last) / 1e8)
         elif args.cmd == "items":
-            _print(lens.items(args.company, args.api, args.year))
+            _print(vault.items(args.company, args.api, args.year))
         elif args.cmd == "sql":
-            _print(lens.sql(args.query), "{:,.2f}")
+            _print(vault.sql(args.query), "{:,.2f}")
 
 
 if __name__ == "__main__":

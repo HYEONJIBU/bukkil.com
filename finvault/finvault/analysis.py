@@ -1,13 +1,13 @@
 """분석 API. 질문에 답할 때 이 모듈을 쓴다.
 
-    from dartlens.analysis import Lens
-    lens = Lens()
-    lens.metrics("삼성전자", ["revenue", "operating_income"], freq="Q", last=8)
-    lens.ratios("삼성전자", freq="A")
-    lens.compare(["삼성전자", "SK하이닉스"], "operating_income", freq="Q")
-    lens.account("삼성전자", "연구개발")          # 표준 지표에 없는 계정 검색
-    lens.items("삼성전자", "alotMatter")          # 배당 등 정기보고서 주요정보
-    lens.sql("SELECT ...")
+    from finvault.analysis import Vault
+    vault = Vault()
+    vault.metrics("삼성전자", ["revenue", "operating_income"], freq="Q", last=8)
+    vault.ratios("삼성전자", freq="A")
+    vault.compare(["삼성전자", "SK하이닉스"], "operating_income", freq="Q")
+    vault.account("삼성전자", "연구개발")          # 표준 지표에 없는 계정 검색
+    vault.items("삼성전자", "alotMatter")          # 배당 등 정기보고서 주요정보
+    vault.sql("SELECT ...")
 """
 
 from __future__ import annotations
@@ -38,7 +38,7 @@ def _period_index(freq: str, periods: pd.Index) -> pd.Index:
     return pd.Index(out, name="period")
 
 
-class Lens:
+class Vault:
     def __init__(self, db_path=None):
         self.conn = db.connect(db_path)
 
@@ -64,7 +64,7 @@ class Lens:
             (company,),
         ).fetchone()
         if not row:
-            raise LookupError(f"DB에 '{company}' 데이터가 없습니다. 먼저 `dartlens ingest {company}` 를 실행하세요.")
+            raise LookupError(f"DB에 '{company}' 데이터가 없습니다. 먼저 `finvault ingest {company}` 를 실행하세요.")
         return row["corp_code"]
 
     def corp_name(self, corp_code: str) -> str:
